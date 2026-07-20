@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Калькулятор электромонтажа | Береза</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: #f0f2f5;
+            display: flex;
+            justify-content: center;
+            padding: 20px;
+            margin: 0;
+        }
+        .calculator {
+            background: white;
+            padding: 25px;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            max-width: 420px;
+            width: 100%;
+        }
+        h2 { margin: 0 0 5px 0; text-align: center; color: #1e3c5c; font-size: 22px; }
+        .subtitle { text-align: center; color: #666; font-size: 13px; margin-bottom: 20px; }
+        .field { margin-bottom: 20px; }
+        label { display: block; font-weight: 600; margin-bottom: 8px; color: #333; font-size: 14px; }
+        input[type="number"] {
+            width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px;
+            font-size: 16px; box-sizing: border-box; background: #fafafa; transition: 0.2s;
+        }
+        input[type="number"]:focus { border-color: #3498db !important; outline: none; box-shadow: 0 0 0 3px rgba(52,152,219,0.1); }
+        .slider-container { position: relative; width: 100%; margin: 5px 0 8px 0; }
+        input[type="range"] {
+            -webkit-appearance: none; width: 100%; height: 10px; border-radius: 5px; outline: none; transition: 0.2s;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none; appearance: none; width: 28px; height: 28px;
+            border-radius: 50%; background: white; border: 3px solid #2c3e50; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        }
+        input[type="range"]::-moz-range-thumb {
+            width: 28px; height: 28px; border-radius: 50%; background: white; border: 3px solid #2c3e50; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        }
+        .slider-type { background: linear-gradient(to right, #3498db 0%, #3498db 50%, #e74c3c 50%, #e74c3c 100%); }
+        .slider-stage { background: linear-gradient(to right, #e67e22 0%, #e67e22 33%, #f1c40f 33%, #f1c40f 66%, #2ecc71 66%, #2ecc71 100%); }
+        .slider-location { background: linear-gradient(to right, #2ecc71 0%, #2ecc71 50%, #e67e22 50%, #e67e22 100%); }
+        .slider-wall { background: linear-gradient(to right, #27ae60 0%, #27ae60 33%, #f39c12 33%, #f39c12 66%, #c0392b 66%, #c0392b 100%); }
+        .slider-strobe { background: linear-gradient(to right, #2ecc71 0%, #2ecc71 33%, #f1c40f 33%, #f1c40f 66%, #e74c3c 66%, #e74c3c 100%); }
+        .slider-matclass { background: linear-gradient(to right, #95a5a6 0%, #95a5a6 33%, #3498db 33%, #3498db 66%, #f1c40f 66%, #f1c40f 100%); }
+        .slider-tax { background: linear-gradient(to right, #95a5a6 0%, #95a5a6 33%, #3498db 33%, #3498db 66%, #2ecc71 66%, #2ecc71 100%); }
+        .slider-labels { display: flex; justify-content: space-between; font-size: 11px; font-weight: 600; color: #555; }
+        .slider-labels span { text-align: center; }
+        .active-label { text-align: center; font-size: 13px; font-weight: 700; padding: 6px; border-radius: 6px; transition: 0.3s; margin-bottom: 5px; }
+        .label-flat { background: #d6eaf8; color: #1a5276; } .label-house { background: #fadbd8; color: #78281f; }
+        .label-rough { background: #fdebd0; color: #a04000; } .label-finish { background: #fef9e7; color: #7d6608; } .label-full { background: #d5f5e3; color: #1e8449; }
+        .label-city { background: #d5f5e3; color: #1e8449; } .label-out { background: #fdebd0; color: #a04000; }
+        .label-pgp { background: #d5f5e3; color: #1e8449; } .label-brick { background: #fef9e7; color: #7d6608; } .label-concrete { background: #fadbd8; color: #78281f; }
+        .label-small-strobe { background: #d5f5e3; color: #1e8449; } .label-medium-strobe { background: #fef9e7; color: #7d6608; } .label-large-strobe { background: #fadbd8; color: #78281f; }
+        .label-eco { background: #eaeded; color: #566573; } .label-std { background: #d6eaf8; color: #1a5276; } .label-vip { background: #fef9e7; color: #7d6608; }
+        .label-tax-none { background: #eaeded; color: #566573; } .label-tax-5 { background: #d6eaf8; color: #1a5276; } .label-tax-16 { background: #d5f5e3; color: #1e8449; }
+        .location-row { display: flex; gap: 10px; align-items: center; }
+        .location-row input { width: 80px; flex-shrink: 0; }
+        .two-inputs { display: flex; gap: 8px; }
+        .two-inputs > div { flex: 1; }
+        .two-inputs label { font-size: 12px; font-weight: 600; margin-bottom: 4px; display: block; }
+        .two-inputs input {
+            font-size: 16px; padding: 12px; text-align: center; font-weight: 600;
+            width: 100%; border-radius: 8px; border: 2px solid #ccc; box-sizing: border-box;
+        }
+        .input-meters { border-color: #2c3e50 !important; background: #fafafa; }
+        .input-strobe { border-color: #e67e22 !important; background: #fffaf5; }
+        .input-points { border-color: #3498db !important; background: #f5fafe; }
+        .label-meters { color: #2c3e50; }
+        .label-strobe { color: #e67e22; }
+        .label-points { color: #3498db; }
+        .info-box { background: #fff3cd; padding: 10px; border-radius: 8px; font-size: 12px; color: #856404; margin-top: 8px; display: none; }
+        .hint { padding: 8px 12px; border-radius: 8px; font-size: 11px; line-height: 1.4; }
+        .hint-blue { background: #eaf4fd; color: #2c5282; }
+        .hint-yellow { background: #fef9e7; color: #7d6608; border-left: 3px solid #f1c40f; }
+        .hint-green { background: #d5f5e3; color: #1e8449; border-left: 3px solid #2ecc71; }
+        .hint-gray { background: #f2f3f4; color: #566573; border-left: 3px solid #95a5a6; }
+        .hint span { font-weight: 700; }
+        .result-box { background: linear-gradient(135deg, #1e3c5c, #2c5282); color: white; padding: 20px; border-radius: 12px; margin-top: 25px; text-align: center; }
+        .price { font-size: 34px; font-weight: bold; letter-spacing: 1px; }
+        .price-small { font-size: 16px; opacity: 0.8; margin-top: 5px; }
+        .breakdown { font-size: 12px; opacity: 0.85; margin-top: 12px; line-height: 1.6; border-top: 1px solid rgba(255,255,255,0.3); padding-top: 12px; text-align: left; }
+        .breakdown span { float: right; font-weight: 600; }
+        .tax-line { color: #2ecc71 !important; }
+        .note { font-size: 11px; opacity: 0.7; margin-top: 10px; font-style: italic; }
+        button { background: #3498db; color: white; border: none; padding: 14px; width: 100%; font-size: 16px; border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.2s; margin-top: 10px; }
+        button:hover { background: #2980b9; }
+        hr { border: none; border-top: 1px solid #eee; margin: 20px 0; }
+    </style>
+</head>
+<body>
+    <div class="calculator">
+        <h2>⚡️ Электромонтаж</h2>
+        <div class="subtitle">Брестская обл., г. Береза и район</div>
+        
+        <!-- 1. ТИП ОБЪЕКТА -->
+        <div class="field">
+            <label>🏠 Тип объекта</label>
+            <div class="slider-container">
+                <input type="range" id="typeSlider" class="slider-type" min="1" max="2" value="1" step="1">
+                <div class="slider-labels"><span>🏢 Квартира</span><span>🏠 Частный дом</span></div>
+            </div>
+            <div id="typeLabel" class="active-label label-flat">🏢 Квартира</div>
+        </div>
+
+        <!-- 2. ПАРАМЕТРЫ: метраж трасс + метраж штроб + точки -->
+        <div class="field">
+            <label>📏 Параметры объекта</label>
+            <div class="two-inputs">
+                <div>
+                    <label class="label-meters">📐 Трасс (п.м.)</label>
+                    <input type="number" id="meters" class="input-meters" value="200" min="0" max="5000" placeholder="200">
+                </div>
+                <div>
+                    <label class="label-strobe">🔪 Штроб (п.м.)</label>
+                    <input type="number" id="strobeMeters" class="input-strobe" value="120" min="0" max="5000" placeholder="120">
+                </div>
+            </div>
+            <div style="margin-top: 10px;">
+                <label class="label-points">🔌 Количество точек (шт.)</label>
+                <input type="number" id="points" class="input-points" value="40" min="0" max="1000" placeholder="40" style="width: 100%; font-size: 16px; padding: 12px; text-align: center; font-weight: 600; border: 2px solid #3498db; border-radius: 8px; background: #f5fafe; box-sizing: border-box;">
+            </div>
+            <div class="hint hint-blue" style="margin-top: 8px;">
+                💡 <strong>Трассы</strong> — вся длина кабеля.<br>
+                💡 <strong>Штробы</strong> — сколько метров в стенах.<br>
+                💡 <strong>Точки</strong> — розетки + выключатели + светильники.<br>
+                • 1-комн. квартира: ~200 м / ~100 м штроб / ~30 точек
+            </div>
+        </div>
+
+        <!-- 3. ШИРИНА ШТРОБЫ -->
+        <div class="field">
+            <label>🔪 Ширина штробы (сечение)</label>
+            <div class="slider-container">
+                <input type="range" id="strobeSlider" class="slider-strobe" min="1" max="3" value="2" step="1">
+                <div class="slider-labels"><span>20×20 мм</span><span>30×30 мм</span><span>40×40 мм+</span></div>
+            </div>
+            <div id="strobeLabel" class="active-label label-medium-strobe">30×30 мм — стандарт (×1,4)</div>
+            <div class="hint hint-yellow" id="strobeHint">🔸 Коэффициент к цене штроб: <span>×1,4 (+40%)</span></div>
+        </div>
+
+        <!-- 4. ЭТАП РАБОТ -->
+        <div class="field">
+            <label>🛠 Этап работ</label>
+            <div class="slider-container">
+                <input type="range" id="stageSlider" class="slider-stage" min="1" max="3" value="3" step="1">
+                <div class="slider-labels"><span>⚒️ Черновые</span><span>🔌 Чистовые</span><span>🔑 Под ключ</span></div>
+            </div>
+            <div id="stageLabel" class="active-label label-full">🔑 Под ключ — метраж + точки + материалы</div>
+        </div>
+
+        <!-- 5. МЕСТОПОЛОЖЕНИЕ -->
+        <div class="field">
+            <label>📍 Адрес объекта</label>
+            <div class="slider-container">
+                <input type="range" id="locationSlider" class="slider-location" min="1" max="2" value="1" step="1">
+                <div class="slider-labels"><span>🏘️ В черте Березы</span><span>🚗 За городом</span></div>
+            </div>
+            <div id="locationLabel" class="active-label label-city">🏘️ В черте Березы — выезд 0 руб.</div>
+            <div id="kmField" style="margin-top: 10px; display: none;">
+                <label style="font-weight: normal; font-size: 13px;">Расстояние от Березы (км)</label>
+                <div class="location-row">
+                    <input type="number" id="distance" value="15" min="1" max="200" placeholder="Км">
+                    <span style="font-size: 13px; color: #666;">км</span>
+                </div>
+                <div class="info-box" id="farWarning">⚠️ Объект дальше 30 км.</div>
+            </div>
+        </div>
+
+        <!-- 6. МАТЕРИАЛ СТЕН -->
+        <div class="field">
+            <label>🧱 Материал стен</label>
+            <div class="slider-container">
+                <input type="range" id="wallSlider" class="slider-wall" min="1" max="3" value="3" step="1">
+                <div class="slider-labels"><span>ПГП</span><span>Кирпич</span><span>Бетон</span></div>
+            </div>
+            <div id="wallLabel" class="active-label label-concrete">🧱 Бетон / Монолит (сложно)</div>
+            <div class="hint hint-gray" id="wallHint">🔸 Расходники на штробы: ~<span id="consumableEstimate">5,9</span> руб./п.м.</div>
+        </div>
+
+        <!-- 7. КЛАСС МАТЕРИАЛОВ -->
+        <div class="field" id="materialClassField">
+            <label>📦 Класс чистовых материалов</label>
+            <div class="slider-container">
+                <input type="range" id="matClassSlider" class="slider-matclass" min="1" max="3" value="2" step="1">
+                <div class="slider-labels"><span>Эконом</span><span>Стандарт</span><span>VIP</span></div>
+            </div>
+            <div id="matClassLabel" class="active-label label-std">📦 Стандарт — 55 руб./точка</div>
+        </div>
+
+        <!-- 8. РЕЖИМ НАЛОГООБЛОЖЕНИЯ -->
+        <div class="field">
+            <label>💼 Режим налогообложения</label>
+            <div class="slider-container">
+                <input type="range" id="taxSlider" class="slider-tax" min="1" max="3" value="2" step="1">
+                <div class="slider-labels"><span>👤 Физлицо</span><span>📋 ИП 5%</span><span>📊 ИП 16%</span></div>
+            </div>
+            <div id="taxLabel" class="active-label label-tax-5">📋 ИП УСН 5% — налог с выручки</div>
+            <div id="taxHint" class="hint hint-green">💰 <span>Налог 5% от всей суммы</span> + <span>~80 руб.</span> ФСЗН.</div>
+        </div>
+
+        <!-- ДОПОЛНИТЕЛЬНЫЕ УСЛУГИ -->
+        <div class="field">
+            <label>🔨 Дополнительные услуги</label>
+            <div style="display: flex; flex-direction: column; gap: 8px;">
+                <label style="display: flex; align-items: center; font-weight: normal; cursor: pointer; font-size: 13px;">
+                    <input type="checkbox" id="grounding" style="width: auto; margin-right: 10px;"> Контур заземления (+350 руб.)
+                </label>
+                <label style="display: flex; align-items: center; font-weight: normal; cursor: pointer; font-size: 13px;">
+                    <input type="checkbox" id="hardShield" style="width: auto; margin-right: 10px;"> Сложный щит: реле, кросс-модули (+450 руб.)
+                </label>
+                <label style="display: flex; align-items: center; font-weight: normal; cursor: pointer; font-size: 13px;">
+                    <input type="checkbox" id="warmFloor" style="width: auto; margin-right: 10px;"> Подключение тёплого пола (+180 руб.)
+                </label>
+            </div>
+        </div>
+
+        <button onclick="calculate()">📊 Рассчитать стоимость</button>
+
+        <div class="result-box" id="resultBox" style="display: none;">
+            <div style="font-size: 14px; margin-bottom: 8px; opacity: 0.9;">СТОИМОСТЬ ДЛЯ КЛИЕНТА</div>
+            <div class="price" id="finalPrice">0 руб.</div>
+            <div class="price-small" id="cleanPrice" style="display: none;"></div>
+            <div class="breakdown" id="breakdown"></div>
+            <div class="note" id="finalNote">*Цены актуальны для Брестской обл. (Береза).</div>
+        </div>
+    </div>
+
+    <script>
+        const PRICES = {
+            strobeWork: {
+                flat:  { pgp: 3.5,  brick: 5.5, concrete: 9.0 },
+                house: { pgp: 4.0,  brick: 6.5, concrete: 10.0 }
+            },
+            cableNoStrobe: {
+                flat:  { pgp: 1.5, brick: 1.5, concrete: 1.5 },
+                house: { pgp: 2.0, brick: 2.0, concrete: 2.0 }
+            },
+            strobeWidthMultiplier: { 1: 1.0, 2: 1.4, 3: 2.0 },
+            consumables: {
+                pgp:      { 1: 1.0, 2: 1.3, 3: 1.8 },
+                brick:    { 1: 2.5, 2: 3.3, 3: 4.5 },
+                concrete: { 1: 4.5, 2: 5.9, 3: 8.0 }
+            },
+            finishWorkPerPoint: { flat: 12, house: 15 },
+            finishConsumablesPerPoint: { flat: 5, house: 6 },
+            materialPerPoint: { 1: 35, 2: 55, 3: 85 },
+            logistics: { outBase: 30, perKm: 1.5 },
+            extras: { grounding: 350, hardShield: 450, warmFloor: 180 },
+            tax: { usn5Rate: 0.05, usn16Rate: 0.16, fsnsPerOrder: 80 }
+        };
+
+        const sliders = {
+            type: { id: 'typeSlider', labelId: 'typeLabel', values: {1:'flat',2:'house'}, labels: {1:['🏢 Квартира','label-flat'],2:['🏠 Частный дом','label-house']} },
+            strobe: { id: 'strobeSlider', labelId: 'strobeLabel', hintId: 'strobeHint', values: {1:'small',2:'medium',3:'large'},
+                labels: {1:['20×20 мм — лёгкая (×1,0)','label-small-strobe'],2:['30×30 мм — стандарт (×1,4)','label-medium-strobe'],3:['40×40 мм+ — тяжёлая (×2,0)','label-large-strobe']},
+                hints: {1:'🔸 Коэффициент: <span>×1,0</span>',2:'🔸 Коэффициент: <span>×1,4 (+40%)</span>',3:'🔸 Коэффициент: <span>×2,0 (двойная)</span>'} },
+            stage: { id: 'stageSlider', labelId: 'stageLabel', values: {1:'rough',2:'finish',3:'full'},
+                labels: {1:['⚒️ Только черновые','label-rough'],2:['🔌 Только чистовые','label-finish'],3:['🔑 Под ключ','label-full']} },
+            location: { id: 'locationSlider', labelId: 'locationLabel', values: {1:'city',2:'out'}, labels: {1:['🏘️ В черте Березы — 0 руб.','label-city'],2:['🚗 За городом','label-out']} },
+            wall: { id: 'wallSlider', labelId: 'wallLabel', hintId: 'wallHint', values: {1:'pgp',2:'brick',3:'concrete'},
+                labels: {1:['🧱 ПГП / Газоблок','label-pgp'],2:['🧱 Кирпич','label-brick'],3:['🧱 Бетон / Монолит','label-concrete']} },
+            matClass: { id: 'matClassSlider', labelId: 'matClassLabel', values: {1:'eco',2:'std',3:'vip'},
+                labels: {1:['📦 Эконом — 35 руб./точка','label-eco'],2:['📦 Стандарт — 55 руб./точка','label-std'],3:['📦 VIP — 85 руб./точка','label-vip']} },
+            tax: { id: 'taxSlider', labelId: 'taxLabel', hintId: 'taxHint', values: {1:'none',2:'usn5',3:'usn16'},
+                labels: {1:['👤 Физлицо','label-tax-none'],2:['📋 ИП УСН 5%','label-tax-5'],3:['📊 ИП УСН 16%','label-tax-16']},
+                hints: {1:'',2:'💰 <span>5% от всей суммы</span> + <span>~80 руб.</span> ФСЗН.',3:'📊 <span>16% с чистого дохода</span> + <span>~80 руб.</span> ФСЗН.'} }
+        };
+
+        function initSlider(config, onChange) {
+            const slider = document.getElementById(config.id);
+            const label = document.getElementById(config.labelId);
+            const hint = config.hintId ? document.getElementById(config.hintId) : null;
+            slider.addEventListener('input', () => {
+                const val = parseInt(slider.value);
+                label.textContent = config.labels[val][0];
+                label.className = 'active-label ' + config.labels[val][1];
+                if (hint && config.hints && config.hints[val]) hint.innerHTML = config.hints[val];
+                if (onChange) onChange(val);
+            });
+        }
+
+        initSlider(sliders.type); initSlider(sliders.strobe); initSlider(sliders.wall); initSlider(sliders.matClass);
+        initSlider(sliders.stage, (val) => { document.getElementById('materialClassField').style.display = val === 3 ? 'block' : 'none'; });
+        initSlider(sliders.location, (val) => { document.getElementById('kmField').style.display = val === 2 ? 'block' : 'none'; });
+        initSlider(sliders.tax, (val) => {
+            const hint = document.getElementById('taxHint');
+            if (val === 1) { hint.style.display = 'none'; }
+            else { hint.style.display = 'block'; hint.innerHTML = sliders.tax.hints[val]; }
+        });
+
+        function updateWallHint() {
+            const wallVal = parseInt(document.getElementById('wallSlider').value);
+            const strobeVal = parseInt(document.getElementById('strobeSlider').value);
+            document.getElementById('consumableEstimate').innerText = PRICES.consumables[sliders.wall.values[wallVal]][strobeVal];
+        }
+        document.getElementById('wallSlider').addEventListener('input', updateWallHint);
+        document.getElementById('strobeSlider').addEventListener('input', updateWallHint);
+
+        ['typeSlider','strobeSlider','stageSlider','locationSlider','wallSlider','matClassSlider','taxSlider',
+         'meters','strobeMeters','points','distance','grounding','hardShield','warmFloor'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.addEventListener(el.type === 'checkbox' ? 'change' : 'input', calculate);
+        });
+
+        function calculate() {
+            const type = sliders.type.values[parseInt(document.getElementById('typeSlider').value)];
+            const strobeNum = parseInt(document.getElementById('strobeSlider').value);
+            const stage = parseInt(document.getElementById('stageSlider').value);
+            const location = sliders.location.values[parseInt(document.getElementById('locationSlider').value)];
+            const wall = sliders.wall.values[parseInt(document.getElementById('wallSlider').value)];
+            const matKey = parseInt(document.getElementById('matClassSlider').value);
+            const taxMode = parseInt(document.getElementById('taxSlider').value);
+
+            const totalMeters = parseInt(document.getElementById('meters').value) || 0;
+            const strobeMetersInput = parseInt(document.getElementById('strobeMeters').value) || 0;
+            const strobeMeters = Math.min(strobeMetersInput, totalMeters);
+            const noStrobeMeters = Math.max(0, totalMeters - strobeMeters);
+            const points = parseInt(document.getElementById('points').value) || 0;
+            const distance = parseInt(document.getElementById('distance').value) || 0;
+
+            if (totalMeters <= 0 && points <= 0) {
+                document.getElementById('resultBox').style.display = 'none';
+                return;
+            }
+
+            if (strobeMetersInput > totalMeters) {
+                document.getElementById('strobeMeters').value = totalMeters;
+            }
+
+            let roughWorkCost = 0, roughConsumablesCost = 0;
+            let finishWorkCost = 0, finishConsumablesCost = 0;
+            let materialCost = 0, logisticsCost = 0, extrasCost = 0;
+
+            if ((stage === 1 || stage === 3) && totalMeters > 0) {
+                const multiplier = PRICES.strobeWidthMultiplier[strobeNum];
+                if (strobeMeters > 0) {
+                    roughWorkCost += strobeMeters * PRICES.strobeWork[type][wall] * multiplier;
+                    roughConsumablesCost += strobeMeters * PRICES.consumables[wall][strobeNum];
+                }
+                if (noStrobeMeters > 0) {
+                    roughWorkCost += noStrobeMeters * PRICES.cableNoStrobe[type][wall];
+                }
+            }
+
+            if ((stage === 2 || stage === 3) && points > 0) {
+                finishWorkCost = points * PRICES.finishWorkPerPoint[type];
+                finishConsumablesCost = points * PRICES.finishConsumablesPerPoint[type];
+            }
+
+            if (stage === 3 && points > 0) {
+                materialCost = points * PRICES.materialPerPoint[matKey];
+            }
+
+            if (location === 'out') {
+                logisticsCost = PRICES.logistics.outBase + (distance * PRICES.logistics.perKm);
+                document.getElementById('farWarning').style.display = distance > 30 ? 'block' : 'none';
+            } else {
+                document.getElementById('farWarning').style.display = 'none';
+            }
+
+            if (document.getElementById('grounding').checked) extrasCost += PRICES.extras.grounding;
+            if (document.getElementById('hardShield').checked) extrasCost += PRICES.extras.hardShield;
+            if (document.getElementById('warmFloor').checked) extrasCost += PRICES.extras.warmFloor;
+
+            const baseTotal = roughWorkCost + roughConsumablesCost + finishWorkCost + 
+                              finishConsumablesCost + materialCost + logisticsCost + extrasCost;
+
+            let taxAmount = 0, taxFsns = 0, totalForClient = baseTotal, cleanMoney = baseTotal;
+            let taxDescription = '';
+
+            if (taxMode === 2) {
+                taxFsns = PRICES.tax.fsnsPerOrder;
+                totalForClient = Math.round((baseTotal + taxFsns) / (1 - PRICES.tax.usn5Rate));
+                taxAmount = Math.round(totalForClient * PRICES.tax.usn5Rate);
+                cleanMoney = totalForClient - taxAmount - taxFsns;
+                taxDescription = 'УСН 5% (с выручки)';
+            } else if (taxMode === 3) {
+                const pureWork = roughWorkCost + roughConsumablesCost + finishWorkCost + 
+                                 finishConsumablesCost + logisticsCost + extrasCost;
+                taxFsns = PRICES.tax.fsnsPerOrder;
+                taxAmount = Math.round(pureWork * PRICES.tax.usn16Rate);
+                totalForClient = baseTotal + taxAmount + taxFsns;
+                cleanMoney = totalForClient - taxAmount - taxFsns;
+                taxDescription = 'УСН 16% (с чистого дохода)';
+            }
+
+            totalForClient = Math.round(totalForClient / 10) * 10;
+            if (totalForClient < 200) totalForClient = 200;
+
+            document.getElementById('resultBox').style.display = 'block';
+            document.getElementById('finalPrice').innerText = totalForClient.toLocaleString('ru-RU') + ' руб.';
+
+            const cleanDiv = document.getElementById('cleanPrice');
+            if (taxMode !== 1) {
+                cleanDiv.style.display = 'block';
+                cleanDiv.innerHTML = '👛 Чистыми после налогов: <strong>' + cleanMoney.toLocaleString('ru-RU') + ' руб.</strong>';
+            } else { cleanDiv.style.display = 'none'; }
+
+            const wallNames = { pgp: 'ПГП', brick: 'Кирпич', concrete: 'Бетон' };
+            const strobeNames = { 1: '20×20 мм', 2: '30×30 мм', 3: '40×40 мм+' };
+            const matNames = { 1: 'Эконом', 2: 'Стандарт', 3: 'VIP' };
+            const multiplier = PRICES.strobeWidthMultiplier[strobeNum];
+            
+            let b = '';
+            if (roughWorkCost > 0 || roughConsumablesCost > 0) {
+                b += `<strong>⚒️ Черновые (трасс: ${totalMeters} п.м.):</strong><br>`;
+                if (strobeMeters > 0) {
+                    const rate = PRICES.strobeWork[type][wall];
+                    b += `&nbsp;&nbsp;Штробление (${strobeMeters} п.м., ${strobeNames[strobeNum]}, ${wallNames[wall]}): ${rate} × ${multiplier} = ${(rate*multiplier).toFixed(1)} руб./п.м. <span>${Math.round(strobeMeters * rate * multiplier).toLocaleString('ru-RU')} руб.</span><br>`;
+                    b += `&nbsp;&nbsp;Расходники на штробы (${PRICES.consumables[wall][strobeNum]} руб./п.м.) <span>${roughConsumablesCost.toLocaleString('ru-RU')} руб.</span><br>`;
+                }
+                if (noStrobeMeters > 0) {
+                    const cableRate = PRICES.cableNoStrobe[type][wall];
+                    b += `&nbsp;&nbsp;Укладка без штроб (${noStrobeMeters} п.м., ${cableRate} руб./п.м.) <span>${(noStrobeMeters * cableRate).toLocaleString('ru-RU')} руб.</span><br>`;
+                }
+            }
+            if (finishWorkCost > 0 || finishConsumablesCost > 0) {
+                b += `<strong>🔌 Чистовые (${points} точек):</strong><br>`;
+                if (finishWorkCost > 0) b += `&nbsp;&nbsp;Работа (${PRICES.finishWorkPerPoint[type]} руб./точка) <span>${finishWorkCost.toLocaleString('ru-RU')} руб.</span><br>`;
+                if (finishConsumablesCost > 0) b += `&nbsp;&nbsp;Расходники (${PRICES.finishConsumablesPerPoint[type]} руб./точка) <span>${finishConsumablesCost.toLocaleString('ru-RU')} руб.</span><br>`;
+            }
+            if (materialCost > 0) b += `<strong>📦 Материалы (${matNames[matKey]}, ${PRICES.materialPerPoint[matKey]} руб./точка):</strong> <span>${materialCost.toLocaleString('ru-RU')} руб.</span><br>`;
+            b += logisticsCost > 0 
+                ? `<strong>🚗 Выезд за город (${distance} км):</strong> <span>${logisticsCost.toLocaleString('ru-RU')} руб.</span><br>`
+                : `<strong>🚗 Выезд по Березе:</strong> <span>0 руб.</span><br>`;
+            if (extrasCost > 0) b += `<strong>🔧 Доп. услуги:</strong> <span>${extrasCost.toLocaleString('ru-RU')} руб.</span><br>`;
+
+            if (taxMode !== 1) {
+                b += `<hr style="border-color: rgba(255,255,255,0.15); margin: 8px 0;">`;
+                b += `<span class="tax-line">🧾 Налог ${taxDescription}:</span> <span class="tax-line">+${taxAmount.toLocaleString('ru-RU')} руб.</span><br>`;
+                b += `<span class="tax-line">📎 ФСЗН + страховка:</span> <span class="tax-line">+${taxFsns.toLocaleString('ru-RU')} руб.</span><br>`;
+            }
+            b += `<hr style="border-color: rgba(255,255,255,0.3); margin: 8px 0;">`;
+            b += `<strong>ИТОГО: <span>${totalForClient.toLocaleString('ru-RU')} руб.</span></strong>`;
+            document.getElementById('breakdown').innerHTML = b;
+
+            document.getElementById('finalNote').innerHTML = taxMode === 2 ? '*Налоги: УСН 5% + ~80 руб. ФСЗН.' :
+                                                              taxMode === 3 ? '*Налоги: УСН 16% с дохода + ~80 руб. ФСЗН.' :
+                                                              '*Цены актуальны для Брестской обл. (Береза).';
+        }
+
+        updateWallHint();
+        calculate();
+    </script>
+</body>
+</html>
